@@ -39,6 +39,12 @@ for alt in alt_labels:
 data_input = pd.DataFrame(rows)
 data_input = st.data_editor(data_input, num_rows="fixed")
 
+# Проверка на пропущенные строки
+expected_rows = num_alternatives * len(criteria)
+if len(data_input) != expected_rows:
+    st.error(f"Ошибка: ожидается {expected_rows} строк (альтернатива × критерий), но получено {len(data_input)}. Проверьте ввод данных.")
+    st.stop()
+
 # Проверка данных и формирование массива
 valid_input = True
 data = []
@@ -57,6 +63,13 @@ for alt in alt_labels:
             valid_input = False
     data.append(row)
 data = np.array(data)
+
+# Проверка: наличие пустых ячеек TFN
+missing_entries = data_input[data_input['Оценка (l,m,u)'].isnull() | (data_input['Оценка (l,m,u)'] == '')]
+if not missing_entries.empty:
+    st.warning("⚠️ Обнаружены незаполненные строки TFN:")
+    st.dataframe(missing_entries)
+    st.stop()
 
 # Проверка: заполнены ли все строки TFN
 if data_input["Оценка (l,m,u)"].isnull().any():
