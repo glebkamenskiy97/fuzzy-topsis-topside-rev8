@@ -71,9 +71,15 @@ if not missing_entries.empty:
     st.dataframe(missing_entries)
     st.stop()
 
-# Проверка: заполнены ли все строки TFN
-if data_input["Оценка (l,m,u)"].isnull().any():
-    st.error("Не все значения TFN заданы. Пожалуйста, заполните все ячейки.")
+# Проверка: наличие пустых ячеек TFN
+missing_entries = data_input[
+    data_input["Оценка (l,m,u)"].isnull() |
+    (data_input["Оценка (l,m,u)"].astype(str).str.strip() == '')
+]
+if not missing_entries.empty:
+    st.warning("⚠️ Обнаружены незаполненные TFN-оценки:")
+    for _, row in missing_entries.iterrows():
+        st.error(f"❌ Альтернатива: {row['Альтернатива']} | Критерий: {row['Критерий']} — поле пустое")
     st.stop()
 
 # Проверка: соответствие размеров массива
